@@ -1,9 +1,14 @@
+// 1. VARIABEL GLOBAL
 let dataKatalogGlobal = [];
+
+// PENTING: Ganti URL di bawah ini dengan URL CSV dari Google Sheets milikmu yang BARU!
 const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr_Sh6mxIZFs_BdXP7zXCuEiU_FiuVcjrchMm5X8cPq8HXn2DZ2X2OQA_ObHxdVLer3dWwGdi5WVmq/pub?gid=989510176&single=true&output=csv";
 
+// 2. DETEKSI PARAMETER URL
 const urlParams = new URLSearchParams(window.location.search);
 const kategoriAktif = urlParams.get('jenis'); 
 
+// 3. UBAH JUDUL HALAMAN
 document.addEventListener("DOMContentLoaded", () => {
     if (kategoriAktif) {
         document.getElementById("judul-kategori").innerText = "Kategori: " + kategoriAktif;
@@ -12,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// 4. FUNGSI GAMBAR
 function formatGambarDrive(urlDrive) {
     if (!urlDrive) return "https://via.placeholder.com/400x300?text=Tidak+Ada+Foto";
     const match = urlDrive.match(/([-\w]{25,})/);
@@ -22,6 +28,7 @@ function formatGambarDrive(urlDrive) {
     return urlDrive;
 }
 
+// 5. PENARIKAN DATA & FILTERING YANG SUDAH DIPERBAIKI
 Papa.parse(urlCSV, {
     download: true,
     header: true,
@@ -30,10 +37,17 @@ Papa.parse(urlCSV, {
             let dataMentah = results.data;
             
             if (kategoriAktif) {
-                // Menggunakan .includes() karena data dari Checkboxes bisa berupa "Olahan Makanan, Olahan Minuman"
-                dataKatalogGlobal = dataMentah.filter(produk => 
-                    produk["Kategori Produk"] && produk["Kategori Produk"].includes(kategoriAktif)
-                );
+                dataKatalogGlobal = dataMentah.filter(produk => {
+                    const kategoriMentah = produk["Kategori Produk"];
+                    if (!kategoriMentah) return false;
+
+                    // LOGIKA BARU: Memecah teks "Makanan, Minuman" menjadi daftar terpisah
+                    // Lalu membersihkan spasi ekstra di kanan/kiri kata
+                    const daftarKategori = kategoriMentah.split(',').map(item => item.trim());
+
+                    // Mengecek apakah kategori di URL ada di dalam daftar yang sudah rapi
+                    return daftarKategori.includes(kategoriAktif.trim());
+                });
             } else {
                 dataKatalogGlobal = dataMentah;
             }
@@ -49,21 +63,20 @@ Papa.parse(urlCSV, {
             
             renderKatalog(dataKatalogGlobal);
         } catch (error) {
-            document.getElementById("status-loading").innerText = "Error membaca data: Pastikan nama kolom di Google Sheets persis sama. Error: " + error.message;
+            document.getElementById("status-loading").innerText = "Error membaca data: " + error.message;
             document.getElementById("status-loading").classList.remove("animate-pulse");
         }
     }
 });
 
+// 6. FUNGSI MERAKIT KARTU KATALOG
 function renderKatalog(data) {
     const wadah = document.getElementById("wadah-katalog");
     let elemenHTML = "";
 
     data.forEach((produk, index) => {
-        // Abaikan baris kosong
         if(!produk["Nama Toko"]) return; 
 
-        // Pemetaan variabel sesuai kolom form baru
         const namaToko = produk["Nama Toko"];
         const kategori = produk["Kategori Produk"];
         const deskripsiSingkat = produk["Deskripsi Singkat Toko"];
@@ -101,11 +114,11 @@ function renderKatalog(data) {
     wadah.innerHTML = elemenHTML;
 }
 
+// 7. FUNGSI POPUP (MODAL)
 function bukaPopup(index) {
     const produk = dataKatalogGlobal[index];
     if (!produk) return;
 
-    // Memasukkan data ke Modal
     document.getElementById('modal-nama').innerText = produk["Nama Toko"];
     document.getElementById('modal-kategori').innerText = produk["Kategori Produk"] || '';
     document.getElementById('modal-deskripsi').innerText = produk["Deskripsi Singkat Toko"];
@@ -143,6 +156,7 @@ function tutupPopup() {
     }, 300); 
 }
 
+// 8. FUNGSI TRANSAKSI WHATSAPP
 function prosesBeli(nomorWA, namaToko) {
     const nomorBersih = nomorWA.replace(/[^0-9]/g, ''); 
     const pesan = `Halo, saya melihat informasi dari website Lapak Desa Lainungan. Saya tertarik dengan barang yang dijual di etalase *${namaToko}*. Apakah bisa dibantu informasi pemesanannya?`;
