@@ -85,6 +85,9 @@ function renderKatalog(data) {
         elemenHTML += `
             <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300 border border-gray-100">
                 <img src="${fotoSiapRender}" alt="${namaToko}" class="w-full h-48 object-cover">
+
+                <div class="kartu-toko bg-white rounded-lg shadow-md overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                <img src="${fotoSiapRender}" alt="${namaToko}" class="gambar-etalase w-full h-48 object-cover">
                 
                 <div class="p-5 flex-grow flex flex-col">
                     <span class="text-xs font-semibold text-green-600 uppercase tracking-wider mb-1">LAPAK / TOKO</span>
