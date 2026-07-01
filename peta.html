@@ -52,7 +52,7 @@
 
     <script>
         // ==========================================
-        // GANTI DENGAN LINK CSV TABEL_TOKO ANDA!
+        // LINK CSV TABEL_TOKO (Sudah dikonversi ke format output=csv)
         // ==========================================
         const URL_CSV_TOKO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr_Sh6mxIZFs_BdXP7zXCuEiU_FiuVcjrchMm5X8cPq8HXn2DZ2X2OQA_ObHxdVLer3dWwGdi5WVmq/pub?gid=1489445987&single=true&output=csv";
 
@@ -74,7 +74,7 @@
             }).addTo(map);
 
             // =========================================================
-            // [TAMBAHAN BARU] 2.5 POLIGON BATAS DESA TALUMAE
+            // 2.5 POLIGON BATAS DESA TALUMAE
             // =========================================================
             const titikBatasTalumae = [
                 [-3.886944, 119.874877],
@@ -173,6 +173,7 @@
                     
                     setTimeout(() => { map.invalidateSize(); }, 200);
 
+                    // Peringatan jika belum ada warga yang input koordinat
                     if (jumlahPin === 0) {
                         document.getElementById("status-loading").classList.remove("hidden");
                         document.getElementById("status-loading").innerHTML = "Data berhasil ditarik, tetapi belum ada titik koordinat yang dimasukkan penjual.";
