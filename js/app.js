@@ -190,6 +190,29 @@ function bukaPopup(index) {
         return true; 
     });
 
+    function tutupPopup() {
+    const modal = document.getElementById('modal-detail');
+    modal.classList.add('opacity-0');
+    modal.children[0].classList.remove('scale-100');
+    modal.children[0].classList.add('scale-95');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('modal-foto').src = ""; 
+    }, 300); 
+}
+
+    function prosesBeli(nomorWA, namaToko) {
+    if (!nomorWA || nomorWA === 'undefined') {
+        alert("Maaf, penjual ini belum mencantumkan nomor WhatsApp.");
+        return;
+    }
+    const nomorBersih = nomorWA.replace(/[^0-9]/g, ''); 
+    const pesan = `Halo, saya melihat informasi dari website Lapak Desa. Saya tertarik dengan barang yang dijual di etalase *${namaToko}*. Apakah bisa dibantu informasi pemesanannya?`;
+    const urlWA = `https://wa.me/${nomorBersih}?text=${encodeURIComponent(pesan)}`;
+    window.open(urlWA, "_blank");
+}
+
     let htmlTabel = `
         <div class="overflow-x-auto rounded-lg">
             <table class="w-full text-sm text-left text-gray-600">
