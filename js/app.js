@@ -2,10 +2,9 @@
 // 1. VARIABEL GLOBAL & DATABASE
 // ==========================================
 let dataKatalogGlobal = [];
-let dataProdukGlobal = []; // Variabel baru untuk menampung seluruh produk
+let dataProdukGlobal = []; 
 
 const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr_Sh6mxIZFs_BdXP7zXCuEiU_FiuVcjrchMm5X8cPq8HXn2DZ2X2OQA_ObHxdVLer3dWwGdi5WVmq/pub?gid=1489445987&single=true&output=csv";
-// LINK CSV TABEL PRODUK BARU
 const urlCSVProduk = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr_Sh6mxIZFs_BdXP7zXCuEiU_FiuVcjrchMm5X8cPq8HXn2DZ2X2OQA_ObHxdVLer3dWwGdi5WVmq/pub?gid=263400492&single=true&output=csv";
 const URL_APPSHEET = "https://www.appsheet.com/start/8dcd40af-1089-4094-8890-7e286c51921a";
 
@@ -19,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (kategoriAktif) {
         document.getElementById("judul-kategori").innerText = "Kategori: " + kategoriAktif;
         document.getElementById("deskripsi-kategori").innerText = "Menampilkan etalase warga yang menyediakan " + kategoriAktif + ".";
-        document.title = kategoriAktif + " - Lapak Desa Lainungan";
+        document.title = kategoriAktif + " - Lapak Desa Talumae";
     }
 });
 
@@ -33,25 +32,20 @@ function formatGambarDrive(urlDrive) {
 }
 
 // ==========================================
-// 3. MESIN PENARIKAN DATA GANDA (TOKO & PRODUK)
+// 3. MESIN PENARIKAN DATA GANDA
 // ==========================================
-// Kita mengunduh data Toko terlebih dahulu...
 Papa.parse(urlCSV, {
     download: true,
     header: true,
     complete: function(resultsToko) {
-        // ...Setelah Toko sukses, langsung unduh data Produk
         Papa.parse(urlCSVProduk, {
             download: true,
             header: true,
             complete: function(resultsProduk) {
                 try {
                     let dataMentahToko = resultsToko.data;
-                    
-                    // Simpan seluruh data produk ke memori global
                     dataProdukGlobal = resultsProduk.data;
                     
-                    // Filter Toko seperti biasa
                     if (kategoriAktif) {
                         dataKatalogGlobal = dataMentahToko.filter(toko => {
                             const kategoriMentah = toko["Kategori Produk"];
@@ -63,7 +57,7 @@ Papa.parse(urlCSV, {
                     }
                     
                     if (!dataKatalogGlobal || dataKatalogGlobal.length === 0) {
-                        document.getElementById("status-loading").innerText = "Belum ada lapak/toko untuk kategori " + (kategoriAktif || "ini") + " saat ini.";
+                        document.getElementById("status-loading").innerText = "Belum ada lapak/toko untuk kategori ini.";
                         document.getElementById("status-loading").classList.remove("animate-pulse");
                         return;
                     }
@@ -73,13 +67,13 @@ Papa.parse(urlCSV, {
                     
                     renderKatalog(dataKatalogGlobal);
                 } catch (error) {
-                    munculkanError("Error memproses data: " + error.message);
+                    munculkanError("Error memproses data.");
                 }
             },
-            error: function(err) { munculkanError("Gagal mengunduh data Produk."); }
+            error: function() { munculkanError("Gagal mengunduh data Produk."); }
         });
     },
-    error: function(err) { munculkanError("Gagal mengunduh data Toko."); }
+    error: function() { munculkanError("Gagal mengunduh data Toko."); }
 });
 
 function munculkanError(pesan) {
@@ -88,7 +82,7 @@ function munculkanError(pesan) {
 }
 
 // ==========================================
-// 4. FUNGSI MERAKIT KARTU KATALOG (BERANDA ETALASE)
+// 4. FUNGSI MERAKIT KARTU KATALOG
 // ==========================================
 function renderKatalog(data) {
     const wadah = document.getElementById("wadah-katalog");
@@ -103,11 +97,8 @@ function renderKatalog(data) {
         const fotoSiapRender = formatGambarDrive(toko["Perwakilan Foto Produk / Etalase"]);
         const kodeUnikToko = toko["Kode Unik Toko"];
         
-        // --- LOGIKA PERHITUNGAN RENTANG HARGA DINAMIS ---
-        // 1. Ambil semua produk milik toko ini
         let produkTokoIni = dataProdukGlobal.filter(p => p["Kode Unik Toko"] === kodeUnikToko);
         
-        // 2. Jika pengunjung membuka kategori tertentu, saring produknya
         if (kategoriAktif) {
             produkTokoIni = produkTokoIni.filter(p => {
                 const katProd = p["Kategori Produk"];
@@ -116,14 +107,12 @@ function renderKatalog(data) {
             });
         }
 
-        // 3. Kumpulkan deretan angka harganya
         let arrayHarga = [];
         produkTokoIni.forEach(p => {
             let nominal = parseFloat(p["Harga (Rp)"]);
             if (!isNaN(nominal) && nominal > 0) arrayHarga.push(nominal);
         });
 
-        // 4. Hitung min-max
         let teksHarga = "Belum ada produk";
         let labelHarga = "Harga";
 
@@ -138,7 +127,6 @@ function renderKatalog(data) {
                 labelHarga = "Rentang Harga";
             }
         }
-        // ------------------------------------------------
 
         elemenHTML += `
             <div class="kartu-toko bg-white rounded-lg shadow-md overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300 border border-gray-100">
@@ -164,7 +152,7 @@ function renderKatalog(data) {
 }
 
 // ==========================================
-// 5. FUNGSI POPUP (MODAL) & PERAKITAN TABEL RELASIONAL
+// 5. FUNGSI BUKA POPUP (MODAL)
 // ==========================================
 function bukaPopup(index) {
     const toko = dataKatalogGlobal[index];
@@ -177,7 +165,6 @@ function bukaPopup(index) {
 
     const kodeUnikToko = toko["Kode Unik Toko"];
     
-    // Logika penyaringan untuk tabel
     const produkTokoIni = dataProdukGlobal.filter(p => {
         const matchKode = p["Kode Unik Toko"] === kodeUnikToko;
         if (!matchKode) return false;
@@ -230,7 +217,6 @@ function bukaPopup(index) {
     htmlTabel += `</tbody></table></div>`;
     document.getElementById('modal-list-barang').innerHTML = htmlTabel;
     
-    // Logika pengubahan teks Rentang Harga di dalam Popup
     let teksHargaModal = "Rp 0";
     let teksLabelModal = "Harga";
     
@@ -251,12 +237,10 @@ function bukaPopup(index) {
         document.getElementById('modal-label-harga').innerText = teksLabelModal;
     }
 
-    // Persiapan Tombol WhatsApp
     const namaAman = toko["Nama Toko"].replace(/'/g, "\\'"); 
     const nomorWA = toko["Nomor Whatsapp (62)"];
     document.getElementById('btn-modal-wa').setAttribute('onclick', `prosesBeli('${nomorWA}', '${namaAman}')`);
 
-    // Munculkan Modal dengan Animasi
     const modal = document.getElementById('modal-detail');
     modal.classList.remove('hidden');
     setTimeout(() => {
@@ -266,7 +250,9 @@ function bukaPopup(index) {
     }, 10);
 }
 
-// INI ADALAH FUNGSI PENUTUP YANG SUDAH DIKELUARKAN DARI DALAM BUKAPOPUP
+// ==========================================
+// 6. FUNGSI TUTUP POPUP (Sekarang Aman di Luar)
+// ==========================================
 function tutupPopup() {
     const modal = document.getElementById('modal-detail');
     modal.classList.add('opacity-0');
@@ -280,7 +266,7 @@ function tutupPopup() {
 }
 
 // ==========================================
-// 6. TRANSAKSI WHATSAPP
+// 7. TRANSAKSI WHATSAPP
 // ==========================================
 function prosesBeli(nomorWA, namaToko) {
     if (!nomorWA || nomorWA === 'undefined') {
@@ -294,7 +280,7 @@ function prosesBeli(nomorWA, namaToko) {
 }
 
 // ==========================================
-// 7. SISTEM SLIDER MENU & LOGIN APPSHEET
+// 8. SISTEM SLIDER MENU & LOGIN APPSHEET
 // ==========================================
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebarMenu');
@@ -308,7 +294,7 @@ function toggleSidebar() {
 function bukaModalKodeUnik() {
     document.getElementById('sidebarMenu').classList.add('-translate-x-full'); 
     const modal = document.getElementById('modalKodeUnik');
-    if(!modal) return; // Mencegah error jika fungsi dipanggil di halaman yang tidak punya modal login
+    if(!modal) return; 
     
     document.getElementById('inputKodeUnik').value = "";
     document.getElementById('pesanErrorKode').classList.add('hidden');
@@ -344,7 +330,6 @@ function validasiDanBukaAppSheet() {
     btnValidasi.innerText = "Mengecek...";
     btnValidasi.disabled = true;
 
-    // Membaca ulang CSV Toko untuk Login
     Papa.parse(urlCSV, {
         download: true,
         header: true,
